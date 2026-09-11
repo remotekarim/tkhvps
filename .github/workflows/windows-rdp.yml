@@ -48,9 +48,23 @@ jobs:
           Write-Host "  >> Open mstsc and connect to: $ts_ip" -ForegroundColor Magenta
           Write-Host "==================================================" -ForegroundColor Green
 
-      - name: 4. Keep Server Alive (48 Hours)
+      - name: 4. Enable Tailscale Funnel (Public Port 443)
         run: |
-          for ($i = 1; $i -le 2880; $i++) {
+          # Launch Tailscale Funnel in background mode for port 443
+          & "C:\Program Files\Tailscale\tailscale.exe" funnel --bg 443
+
+          Start-Sleep -Seconds 5
+
+          # Get Public Funnel Status and print Domain
+          Write-Host "==================================================" -ForegroundColor Green
+          Write-Host "  >>> TAILSCALE FUNNEL IS ACTIVE! <<<" -ForegroundColor Cyan
+          & "C:\Program Files\Tailscale\tailscale.exe" funnel status
+          Write-Host "==================================================" -ForegroundColor Green
+
+      - name: 5. Keep Server Alive (6 Hours Max)
+        run: |
+          # 360 iterations * 60 seconds = 6 hours (GitHub Runner Timeout Limit)
+          for ($i = 1; $i -le 360; $i++) {
             Start-Sleep -Seconds 60
-            Write-Host "[$i/2880] Server running..."
+            Write-Host "[$i/360] Server running..."
           }
